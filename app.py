@@ -1,28 +1,26 @@
 import streamlit as st
 import librosa
-import librosa.display
 import numpy as np
 import matplotlib.pyplot as plt
 
-st.set_page_config(page_title="AI Voice Detector", layout="wide")
-st.title("🎙️ Audio Analysis Tool")
+st.title("🎙️ 音訊分析工具 (修復版)")
 
-uploaded_file = st.sidebar.file_uploader("Upload audio (wav/mp3)", type=["wav", "mp3"])
+uploaded_file = st.file_uploader("上傳音訊", type=["wav", "mp3"])
 
 if uploaded_file is not None:
-    with st.spinner('Processing...'):
+    try:
+        # 讀取音訊
         y, sr = librosa.load(uploaded_file, sr=None)
+        st.success("檔案讀取成功！")
         
-        # 計算特徵
-        rms = np.mean(librosa.feature.rms(y=y))
-        zcr = np.mean(librosa.feature.zero_crossing_rate(y=y))
-        
-        st.subheader("Analysis Result")
-        if rms < 0.02 and zcr < 0.02:
-            st.error("⚠️ Likely AI Voice")
-        else:
-            st.success("✅ Likely Human Voice")
-            
+        # 顯示波形
         fig, ax = plt.subplots()
         ax.plot(y)
         st.pyplot(fig)
+        
+        # 計算簡單特徵
+        rms = np.mean(librosa.feature.rms(y=y))
+        st.write(f"平均能量 (RMS): {rms:.4f}")
+        
+    except Exception as e:
+        st.error(f"發生錯誤: {e}")
